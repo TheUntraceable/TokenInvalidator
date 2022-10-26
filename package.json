@@ -1,0 +1,34 @@
+{
+  "name": "tokeninvalidator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Invalidate tokens sent in public channels on Discord",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheUntraceable/TokenInvalidator.git"
+  },
+  "keywords": [
+    "TokenInvalidator",
+    "RPC",
+    "Discord",
+    "DiscordRPC",
+    "Token",
+    "DiscordToken",
+    "DiscordTokenInvalidator"
+  ],
+  "author": "TheUntraceable",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TheUntraceable/TokenInvalidator/issues"
+  },
+  "homepage": "https://github.com/TheUntraceable/TokenInvalidator#readme",
+  "dependencies": {
+    "@theuntraceable/discord-rpc": "^4.0.8",
+    "chalk": "^5.1.2",
+    "inquirer": "^9.1.4"
+  }
+}
