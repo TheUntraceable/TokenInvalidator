@@ -7,6 +7,7 @@ import fs from "fs/promises"
 
 const client = new Client({ transport: "ipc" })
 const config = JSON.parse(await fs.readFile("./config.json", "utf-8"))
+client.rejectedTokenCache = new Set()
 client.config = config
 
 client.invalidateToken = async token => {
@@ -63,11 +64,15 @@ client.on("MESSAGE_CREATE", async payload => {
     const { message, channel_id } = payload
     const { content, author } = message
     for(const word of content.split(" ")) {
-        if(TOKEN_REGEX.test(word) && (word.startsWith("N") || word.startsWith("M")) || word.startsWith("O")) {
+        if(TOKEN_REGEX.test(word) && (word.startsWith("N") || word.startsWith("M")) || word.startsWith("O") && !client.rejectedTokenCache.has(word)) {
             const [userId, _, __] = word.split(".")
             try {
                 BigInt(Buffer.from(userId, "base64").toString())
             } catch {
+                continue
+            }
+            if(config.autoInvalidate) {
+                await client.invalidateToken(word)
                 continue
             }
             const answers = await inquirer.prompt([{
@@ -77,7 +82,17 @@ client.on("MESSAGE_CREATE", async payload => {
             }])
             if(answers.invalidate) {
                 await client.invalidateToken(word)
-        }
+                client.rejectedTokenCache.add(word)
+            } else {
+                const cache = await inquirer.prompt([{
+                    type: "confirm",
+                    name: "cache",
+                    message: "Do you want to cache this decision?",
+                }])
+                if(cache.cache) {
+                    client.rejectedTokenCache.add(word)
+                }
+            }
     }}
 })
 

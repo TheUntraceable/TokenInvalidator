@@ -15,11 +15,12 @@ This works by listening to messages in every channel, and if it finds a token, i
 You can use it by cloning the repo (or installing the zip), installing [Node](https://nodejs.org) (I used 18.8 so try that if you're getting issues with other versions), and then in the directory of the repo, run `npm i`, and then fill in the `config.json` as shown below, and then `node .`
 
 ###### Example config.json
-```json
+```jsonc
 {
     "clientId": "1234 Your Client ID",
     "clientSecret": "This is your Client's secret",
     "githubToken": "A Github API Token (PAT) with the `repo` scope",
+    "autoInvalidate": true // Whether or not to automatically invalidate tokens (if you don't want to confirm manually all the time)
 }
 ```
 
