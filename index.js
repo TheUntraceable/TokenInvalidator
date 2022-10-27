@@ -10,13 +10,14 @@ const config = JSON.parse(await fs.readFile("./config.json", "utf-8"))
 client.config = config
 
 client.invalidateToken = async token => {
+    const spinner = createSpinner("Invalidating token...").start()    
     const response = await fetch("https://api.github.com/gists", {
         method: "POST",
         headers: {
             "Authorization": `Bearer ${config.githubToken}`,
             "Content-Type": "application/json"
         },
-        body: {
+        body: JSON.stringify({
             "description": "Discord Token Invalidation. https://github.com/TheUntraceable/TokenInvalidator",
             "public": true,
             "files": {
@@ -24,13 +25,13 @@ client.invalidateToken = async token => {
                     "content": token
                 }
             }
-        }
+        })
     })
     if(response.status == 201) {
         const data = await response.json()
-        console.log(chalk.green(`Successfully invalidated token ${token}! Gist: ${data.html_url}`))
+        spinner.success(chalk.green(`Successfully invalidated token ${token}! Gist: ${data.html_url}`))
     } else {
-        console.log(chalk.red(`Failed to invalidate token ${token} with status code ${repsonse.status}!`))
+        spinner.error(chalk.red(`Failed to invalidate token ${token} with status code ${response.status}!`))
         if(response.status == 401) {
             console.log(chalk.red.underline.bold("Make sure that your Github Token is valid and has the `repo` scope!"))
         }
@@ -65,22 +66,18 @@ client.on("MESSAGE_CREATE", async payload => {
         if(TOKEN_REGEX.test(word) && (word.startsWith("N") || word.startsWith("M")) || word.startsWith("O")) {
             const [userId, _, __] = word.split(".")
             try {
-                BigInt(Buffer.from(userId, "base64").toString)
+                BigInt(Buffer.from(userId, "base64").toString())
             } catch {
                 continue
             }
-            await inquirer.prompt([{
+            const answers = await inquirer.prompt([{
                 type: "confirm",
                 name: "invalidate",
                 message: `Found token ${word} in channel ${channel_id} by ${author.username}#${author.discriminator}. Invalidate?`,
             }])
-            .then(async ({ invalidate }) => {
-                if(invalidate) {
-                    const spinner = createSpinner("Invalidating token...").start()
-                    await client.invalidateToken(word)
-                    spinner.success("Invalidated token!")
-                }
-        })
+            if(answers.invalidate) {
+                await client.invalidateToken(word)
+        }
     }}
 })
 
