@@ -64,7 +64,7 @@ client.on("MESSAGE_CREATE", async payload => {
     const { message, channel_id } = payload
     const { content, author } = message
     for(const word of content.split(" ")) {
-        if(TOKEN_REGEX.test(word) && (word.startsWith("N") || word.startsWith("M")) || word.startsWith("O") && !client.rejectedTokenCache.has(word)) {
+        if(TOKEN_REGEX.test(word) && (word.startsWith("N") || word.startsWith("M") || word.startsWith("O")) && !client.rejectedTokenCache.has(word)) {
             const [userId, _, __] = word.split(".")
             try {
                 BigInt(Buffer.from(userId, "base64").toString())
@@ -73,24 +73,25 @@ client.on("MESSAGE_CREATE", async payload => {
             }
             if(config.autoInvalidate) {
                 await client.invalidateToken(word)
-                continue
-            }
-            const answers = await inquirer.prompt([{
-                type: "confirm",
-                name: "invalidate",
-                message: `Found token ${word} in channel ${channel_id} by ${author.username}#${author.discriminator}. Invalidate?`,
-            }])
-            if(answers.invalidate) {
-                await client.invalidateToken(word)
                 client.rejectedTokenCache.add(word)
             } else {
-                const cache = await inquirer.prompt([{
+                const answers = await inquirer.prompt([{
                     type: "confirm",
-                    name: "cache",
-                    message: "Do you want to cache this decision?",
+                    name: "invalidate",
+                    message: `Found token ${word} in channel ${channel_id} by ${author.username}#${author.discriminator}. Invalidate?`,
                 }])
-                if(cache.cache) {
+                if(answers.invalidate) {
+                    await client.invalidateToken(word)
                     client.rejectedTokenCache.add(word)
+                } else {
+                    const cache = await inquirer.prompt([{
+                        type: "confirm",
+                        name: "cache",
+                        message: "Do you want to cache this decision?",
+                    }])
+                    if(cache.cache) {
+                        client.rejectedTokenCache.add(word)
+                    }
                 }
             }
     }}
