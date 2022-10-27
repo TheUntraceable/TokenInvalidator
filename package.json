@@ -29,6 +29,8 @@
   "dependencies": {
     "@theuntraceable/discord-rpc": "^4.0.8",
     "chalk": "^5.1.2",
-    "inquirer": "^9.1.4"
+    "inquirer": "^9.1.4",
+    "nanospinner": "^1.1.0",
+    "node-fetch": "^3.2.10"
   }
 }
